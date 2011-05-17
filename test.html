@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+    "http://www.w3.org/TR/html4/strict.dtd"
+    >
+<html lang="en">
+    <!--Author: Mohit Singh Kanwal-->
+<head>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.js"></script>
+    <script type="text/javascript" src="jquery.xdomainajax.js"></script>
+  
+    <title><!-- Insert your title here --></title>
+</head>
+<body>
+    <form>
+    <input type="button" value ="press to find" onclick="onBtnClick()"/>
+    </form>
+    <div id="content"></div>
+    <div id = "stuff"></div>
+    <div id = "realstuff">
+        <table border="1" id="myTable">
+        <tr>
+        <th>Department/Centre</th>
+        <th>Topics</th>
+        </tr>
+        <tr>
+        <td>row 1, cell 1</td>
+        <td>row 1, cell 2</td>
+        </tr>
+        <tr>
+        <td>row 2, cell 1</td>
+        <td>row 2, cell 2</td>
+        </tr>
+        </table>
+    </div>
+    <!-- Insert your content here -->
+      <script type="text/javascript">
+        
+        String.prototype.startsWith = function(str){return (this.indexOf(str) === 0);}
+        var hMap = new Array();
+        var URLtoTopicMap = new Array();
+        var labToURL = new Array();
+        function onBtnClick(eventArgs)
+        {
+            $("#myTable").empty();
+             for(var key in hMap)
+                {
+                    var link = '"'+labToURL[key] +'"';
+                    var data = hMap[key];
+                    data.replace("undefined","s");
+                    $("#myTable").append("<tr><td><a href="+ link+">"+key+"<a/></td>"+"<td>"+data+"</td></tr>");
+                }
+        }
+        function pauseE()
+        {
+            for(var i=0;i<60000000;i++)
+            {
+                
+            }
+        }
+        $(document).ready(function(){
+            var self = this;
+            //alert("ready");
+            $.ajax({url: 'http://web.mit.edu/research/',
+                type: 'GET',
+                success: function(res) {
+                var headline = $(res.responseText);
+                //alert(headline);
+                
+                $("#content").html(headline);
+                x = $(".Listings");
+                $("#content").html("");
+                
+                var relURL = "";
+                var topic = "";
+                for(var i=0;i<x.length;i++)
+                {
+                    relURL = x[i].childNodes[0].attributes[0].nodeValue;
+                    //$("#stuff").append(topic);
+                    topic = x[i].textContent;
+                    
+                    //make the call here
+                    if(relURL.startsWith("http") && (relURL.indexOf("labs")!= -1))//not a relative url
+                    {
+                        $.ajax({
+                            url: relURL,
+                            type: 'GET',
+                            success: function(answer)
+                            {
+                                $("#content").html(answer.responseText);
+                                labs = $(".TrigListings");
+                                yahoo = $(".list_trig");
+                                $("#content").html("");
+                                for(var m =0;m<labs.length;m++){
+                                    var relURL2 = labs[m].childNodes[0].attributes[0].nodeValue;
+                                    var labName = labs[m].textContent;
+                                    hMap[labName] += "<p>"+yahoo.text()+"</p>";
+                                    labToURL[labName] = relURL2;
+                                }
+                            }
+                            });
+                    }
+                    else if(relURL.indexOf("labs")!=-1 && relURL.indexOf("electrical")==-1)
+                    {
+                        var myURL =  "http://web.mit.edu/research/"+relURL;
+                        URLtoTopicMap[myURL] = topic;
+                        var subjectName = x[i].textContent;
+                        $.get(myURL,function(answer)
+                            {
+                                if(answer == undefined) return;
+                                $("#content").html(answer.responseText);
+                                labs = $(".TrigListings");
+                                yahoo = $(".list_trig");
+                                $("#content").html("");
+                                for(var m =0;m<labs.length;m++){
+                                    var relURL2 = labs[m].childNodes[0].attributes[0].nodeValue;
+                                    var labName = labs[m].textContent;
+                                    hMap[labName] += "<p>"+yahoo.text()+"</p>";
+                                    labToURL[labName] = relURL2;
+                                }
+                            }
+                            
+                            );
+                    }
+                  // $("#stuff").append("<p>"+relURL+"|||"+ x[i].textContent + "</p>");
+                }
+                //Now we have a hashmap of labs to courses
+               
+                /*$.ajax({
+                        url: 'http://web.mit.edu/research/'+x[0].childNodes[0].attributes[0].nodeValue,
+                        type: 'GET',
+                        success: function(res2){
+                            $("#content").html(res2.responseText);
+                            var t = $(".TrigListings");
+                            $("#content").html("");
+                            for(var y=0;y<t.length;y++){
+                                var relURL2 = t[y].childNodes[0].attributes[0].nodeValue;
+                                var topic2 = t[y].textContent;
+                                hMap[topic] += topic2;
+                            }
+                            $("#stuff").append(hMap[topic]);
+                        }
+                        });*/
+                    
+             }
+            });
+        });
+    </script>
+    
+</body>
+</html>
